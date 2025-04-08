@@ -1,0 +1,7 @@
+ultralytics>=8.0.0
+opencv-python>=4.8.0
+paho-mqtt>=1.6.1
+psycopg2-binary>=2.9.9
+sensirion-i2c-driver>=1.0.0
+sensirion-i2c-scd>=1.0.0
+smbus2>=0.4.2 
