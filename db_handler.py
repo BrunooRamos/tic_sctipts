@@ -23,7 +23,7 @@ class DataHandler:
             host="localhost"
         )
         
-        # Iniciar el monitor de timeouts
+        # Iniciar el monitor de timeoutCCC
         self.timeout_thread = threading.Thread(target=self.check_timeouts)
         self.timeout_thread.daemon = True
         self.timeout_thread.start()

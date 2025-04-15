@@ -1,32 +1,33 @@
-from ultralytics import YOLO
+from count_people import get_people_stream
+from get_measure import get_random_measure
+from connection_handler import (
+    mqtt_connection, connect_to_iot_core, subscribe_to_topic, topic
+)
 import json
-import cv2
-from count_people import count_people
 
 def main():
-    model = YOLO("yolov8n.pt")
-    cap = cv2.VideoCapture(0)
+    # 1. Conectar a AWS IoT Core y suscribirse
+    connect_to_iot_core()
+    subscribe_to_topic()
 
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if not ret:
-            break
-        
-        # Se cuenta el numero de personas en el frame, para esto se usa el modelo de YOLOv8n.
-        frame_procesado, results = count_people(frame, model)
-        cv2.imshow("YOLOv8 Person Detection", frame_procesado)
+    # 2. Procesar frames de la cámara y contar personas
+    for people_count in get_people_stream():
+        # 3. Obtener medición ficticia
+        medida = get_random_measure()
 
-        #!Este results es el que se debe enviar a lambda. Antes debe guardar en redis.
+        # 4. Unir la información en un solo mensaje
+        mensaje = {
+            "people": people_count,
+            "humidity": medida["humidity"],
+            "temperature": medida["temperature"],
+            "co2": medida["co2"]
+        }
 
-        with open('detecciones.json', 'w') as f:
-            json.dump(results, f, indent=4)
-            
-
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
-
+        # 5. Publicar a MQTT
+        mqtt_connection.publish(
+            topic,
+            json.dumps(mensaje),
+            qos=1
+        )
 if __name__ == "__main__":
     main()
